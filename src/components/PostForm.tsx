@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { getInitials, getAvatarColor } from "../lib/utils";
+import { createClient } from '@supabase/supabase-js';
+import imageCompression from 'browser-image-compression';
 
 type PostFormProps = {
   onPost: () => void;
@@ -10,26 +12,76 @@ type PostFormProps = {
 export default function PostForm({ onPost }: PostFormProps) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [largeImageWarning, setLargeImageWarning] = useState<string | null>(null);
 
   // Default sample user
   const sampleUser = "John Doe";
   const avatarColor = getAvatarColor(sampleUser);
   const initials = getInitials(sampleUser);
 
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (!file) {
+      setImageFile(null);
+      setImagePreview(null);
+      setLargeImageWarning(null);
+      return;
+    }
+    // Compress the image
+    try {
+      const compressedFile = await imageCompression(file, {
+        maxSizeMB: 10,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      });
+      setImageFile(compressedFile);
+      setImagePreview(URL.createObjectURL(compressedFile));
+      if (compressedFile.size > 10 * 1024 * 1024) {
+        setLargeImageWarning('Warning: This image is still very large and may not display in some browsers.');
+      } else {
+        setLargeImageWarning(null);
+      }
+    } catch (err) {
+      alert('Image compression failed. Please try another image.');
+      setImageFile(null);
+      setImagePreview(null);
+      setLargeImageWarning(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim()) return;
+    if (!content.trim() && !imageFile) return;
     
     setLoading(true);
+    let photo_url = null;
+    if (imageFile) {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('post-photos').upload(fileName, imageFile);
+      if (uploadError) {
+        alert('Image upload failed: ' + uploadError.message);
+        setLoading(false);
+        return;
+      }
+      const { data } = supabase.storage.from('post-photos').getPublicUrl(fileName);
+      photo_url = data?.publicUrl || null;
+      console.log('Public URL:', photo_url);
+    }
     const { error } = await supabase.from("posts").insert([{ 
       content,
       user_id: null,
-      user_name: sampleUser
+      user_name: sampleUser,
+      photo_url
     }]);
     setLoading(false);
     
     if (!error) {
       setContent("");
+      setImageFile(null);
+      setImagePreview(null);
       onPost();
     } else {
       alert("Error posting: " + error.message);
@@ -47,6 +99,16 @@ export default function PostForm({ onPost }: PostFormProps) {
         </div>
         <div className="flex-1">
           <form onSubmit={handleSubmit}>
+            {imagePreview && (
+              <div className="mb-3 flex flex-col items-center">
+                <div className="bg-white border-2 border-primary-blue rounded-xl shadow-lg p-2 inline-block">
+                  <img src={imagePreview} alt="Preview" className="max-h-48 rounded-lg object-contain" style={{background: '#f3f4f6'}} />
+                </div>
+                {largeImageWarning && (
+                  <div className="text-xs text-yellow-600 mt-2">{largeImageWarning}</div>
+                )}
+              </div>
+            )}
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -56,25 +118,16 @@ export default function PostForm({ onPost }: PostFormProps) {
               maxLength={500}
             />
             <div className="flex items-center justify-between mt-3">
-              <div className="flex space-x-2">
-                <button
-                  type="button"
-                  className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"
-                  title="Add photo"
-                >
+              <div className="flex space-x-2 items-center">
+                <label className="p-2 text-gray-500 hover:bg-gray-100 rounded-full cursor-pointer" title="Add photo">
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                   </svg>
-                </button>
-                <button
-                  type="button"
-                  className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"
-                  title="Add emoji"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-7.536 5.879a1 1 0 001.415 0 3 3 0 014.242 0 1 1 0 001.415-1.415 5 5 0 00-7.072 0 1 1 0 000 1.415z" clipRule="evenodd" />
-                  </svg>
-                </button>
+                </label>
+                {imageFile && (
+                  <button type="button" className="text-xs text-red-500 underline cursor-pointer" onClick={() => { setImageFile(null); setImagePreview(null); }}>Remove</button>
+                )}
               </div>
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-gray-500">
@@ -82,12 +135,12 @@ export default function PostForm({ onPost }: PostFormProps) {
                 </span>
                 <button
                   type="submit"
-                  disabled={loading || !content.trim()}
-                  className="btn-primary px-6 py-2"
+                  disabled={loading || (!content.trim() && !imageFile)}
+                  className="btn-primary px-6 py-2 cursor-pointer"
                 >
                   {loading ? (
                     <div className="flex items-center">
-                      <div className="spinner mr-2"></div>
+                      <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
                       Posting...
                     </div>
                   ) : (
