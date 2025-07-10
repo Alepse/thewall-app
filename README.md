@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TheWall - Social Media Platform
 
-## Getting Started
+A modern, Facebook-inspired social media platform built with Next.js, TypeScript, Tailwind CSS, and Supabase.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### ✅ Implemented Features
+- **Post Creation:** Only “John Doe” can create posts.
+- **Post Deletion:** Only “John Doe” can delete their own posts (via ellipsis menu at the top right of each post).
+- **Like System:** Anyone can like/unlike posts (not user-specific, just increments/decrements the count).
+- **Comments:** Anyone can add comments as “John Doe”.
+- **Facebook-like UI:** Modern, responsive design with blue theme and card-based layout.
+- **Sidebar Navigation:** Menu items for Home, Friends, Groups, Marketplace, etc. (most show “coming soon” alerts).
+- **Trending Topics:** Static trending topics in the right sidebar.
+- **Search Bar:** Present in the header (not functional).
+
+### 🚧 Not Yet Implemented / Placeholder Only
+- **Authentication:** No sign up, sign in, or user switching.
+- **User Profiles:** No profile editing, avatars are colored initials only.
+- **Follows/Unfollows:** Not implemented.
+- **Notifications:** Not implemented.
+- **Direct Messaging:** Not implemented.
+- **Image Uploads:** Not implemented.
+- **Real-Time Updates:** Not implemented (manual refresh required).
+- **Advanced Search:** Not implemented.
+- **Dark Mode:** Not implemented.
+- **Mobile App:** Not implemented.
+- **Settings, Friends, Groups, Marketplace, Pages, Events, Gaming, etc.:** Sidebar buttons show alert only.
+
+## How It Works
+
+- All posts and comments are made as “John Doe”.
+- Only “John Doe” posts can be deleted, via a menu on each post.
+- Likes and comments are not tied to any real user account.
+- Most navigation and social features are placeholders for future development.
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js app directory
+│   ├── layout.tsx          # Root layout
+│   ├── page.tsx            # Main home page
+│   └── globals.css         # Global styles
+├── components/             # React components
+│   ├── Header.tsx          # Main header with navigation
+│   ├── PostForm.tsx        # Post creation form
+│   ├── PostList.tsx        # Posts display with likes/comments and delete
+│   └── Sidebar.tsx         # Left sidebar navigation
+└── lib/                    # Utility functions
+    ├── supabaseClient.ts   # Supabase client configuration
+    └── utils.ts            # Helper functions and date formatting
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install dependencies:  
+   `npm install`
+2. Set up your Supabase project and run the SQL in your setup script.
+3. Add your Supabase URL and anon key to `.env.local`.
+4. Start the app:  
+   `npm run dev`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The application will be available at `http://localhost:3000`
 
-## Learn More
+## License
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT License - feel free to use this project for personal or commercial purposes.
