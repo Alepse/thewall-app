@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabaseClient";
 import { getInitials, getAvatarColor } from "../lib/utils";
 import imageCompression from 'browser-image-compression';
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 type PostFormProps = {
   onPost: () => void;
@@ -112,7 +113,7 @@ export default function PostForm({ onPost }: PostFormProps) {
             {imagePreview && (
               <div className="mb-3 flex flex-col items-center">
                 <div className="bg-white border-2 border-primary-blue rounded-xl shadow-lg p-2 inline-block">
-                  <img src={imagePreview} alt="Preview" className="max-h-48 rounded-lg object-contain" style={{background: '#f3f4f6'}} />
+                  <Image src={imagePreview} alt="Preview" width={320} height={192} className="max-h-48 rounded-lg object-contain" style={{background: '#f3f4f6'}} unoptimized />
                 </div>
                 {largeImageWarning && (
                   <div className="text-xs text-yellow-600 mt-2">{largeImageWarning}</div>

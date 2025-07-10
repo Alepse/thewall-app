@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { formatDate, getInitials, getAvatarColor } from "../lib/utils";
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 type Post = {
   id: string;
@@ -211,7 +212,7 @@ export default function PostList({ refresh }: PostListProps) {
             {post.photo_url && (
               <div className="mb-4 flex justify-center">
                 <div className="bg-gradient-to-br from-gray-100 to-white border border-gray-200 rounded-2xl shadow-xl p-2 inline-block transition-transform hover:scale-105 cursor-pointer" onClick={() => setImageModalUrl(post.photo_url!)}>
-                  <img src={post.photo_url} alt="Post" className="max-h-80 w-full object-cover rounded-xl" style={{background: '#f3f4f6'}} />
+                  <Image src={post.photo_url} alt="Post" width={640} height={400} className="max-h-80 w-full object-cover rounded-xl" style={{background: '#f3f4f6'}} unoptimized />
                 </div>
               </div>
             )}
@@ -323,7 +324,7 @@ export default function PostList({ refresh }: PostListProps) {
               <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
             <div className="bg-white rounded-2xl shadow-2xl p-4 flex justify-center items-center">
-              <img src={imageModalUrl} alt="Full Preview" className="max-h-[70vh] w-auto rounded-xl object-contain" style={{background: '#f3f4f6'}} />
+              <Image src={imageModalUrl} alt="Full Preview" width={800} height={600} className="rounded-xl object-contain" unoptimized />
             </div>
           </div>
         </div>
