@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { formatDate, getInitials, getAvatarColor } from "../lib/utils";
+import { toast } from 'sonner';
 
 type Post = {
   id: string;
@@ -41,7 +42,6 @@ export default function PostList({ refresh }: PostListProps) {
 
   useEffect(() => {
     fetchPosts();
-    // eslint-disable-next-line
   }, [refresh]);
 
   useEffect(() => {
@@ -127,6 +127,13 @@ export default function PostList({ refresh }: PostListProps) {
           ? { ...p, comments_count: p.comments_count + 1 }
           : p
       ));
+      toast.success('Comment added!', {
+        description: 'Your comment has been posted.'
+      });
+    } else {
+      toast.error('Error adding comment', {
+        description: error.message
+      });
     }
   };
 
@@ -160,7 +167,7 @@ export default function PostList({ refresh }: PostListProps) {
               </div>
               {/* Ellipsis menu for John Doe's posts at top right */}
               {post.user_name === 'John Doe' && (
-                <div className="ml-auto relative" ref={el => (menuRefs.current[post.id] = el)}>
+                <div className="ml-auto relative" ref={el => { menuRefs.current[post.id] = el; }}>
                   <button
                     className="p-2 rounded-full hover:bg-gray-100 text-gray-500 cursor-pointer"
                     title="More options"
@@ -176,15 +183,19 @@ export default function PostList({ refresh }: PostListProps) {
                     <div className="absolute right-0 mt-2 w-28 bg-white border border-gray-200 rounded shadow-lg z-10">
                       <button
                         onClick={async () => {
-                          if (window.confirm('Are you sure you want to delete this post?')) {
-                            const { error } = await supabase.from('posts').delete().eq('id', post.id);
-                            if (!error) {
+                          toast.promise(
+                            (async () => {
+                              const { error } = await supabase.from('posts').delete().eq('id', post.id);
+                              if (error) throw error;
                               setPosts(posts.filter(p => p.id !== post.id));
                               setOpenMenuPostId(null);
-                            } else {
-                              alert('Error deleting post: ' + error.message);
+                            })(),
+                            {
+                              loading: 'Deleting post...',
+                              success: 'Post deleted successfully!',
+                              error: (err) => `Error deleting post: ${err.message}`
                             }
-                          }
+                          );
                         }}
                         className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded cursor-pointer"
                       >

@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { getInitials, getAvatarColor } from "../lib/utils";
-import { createClient } from '@supabase/supabase-js';
 import imageCompression from 'browser-image-compression';
+import { toast } from 'sonner';
 
 type PostFormProps = {
   onPost: () => void;
@@ -44,7 +44,10 @@ export default function PostForm({ onPost }: PostFormProps) {
         setLargeImageWarning(null);
       }
     } catch (err) {
-      alert('Image compression failed. Please try another image.');
+      console.error('Image compression failed:', err);
+      toast.error('Image compression failed', {
+        description: 'Please try another image.'
+      });
       setImageFile(null);
       setImagePreview(null);
       setLargeImageWarning(null);
@@ -62,7 +65,9 @@ export default function PostForm({ onPost }: PostFormProps) {
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
       const { error: uploadError } = await supabase.storage.from('post-photos').upload(fileName, imageFile);
       if (uploadError) {
-        alert('Image upload failed: ' + uploadError.message);
+        toast.error('Image upload failed', {
+          description: uploadError.message
+        });
         setLoading(false);
         return;
       }
@@ -82,9 +87,14 @@ export default function PostForm({ onPost }: PostFormProps) {
       setContent("");
       setImageFile(null);
       setImagePreview(null);
+      toast.success('Post created successfully!', {
+        description: 'Your post has been shared.'
+      });
       onPost();
     } else {
-      alert("Error posting: " + error.message);
+      toast.error('Error posting', {
+        description: error.message
+      });
     }
   };
 

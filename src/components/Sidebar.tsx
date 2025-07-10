@@ -1,9 +1,12 @@
 "use client";
 import { getInitials, getAvatarColor } from '../lib/utils';
+import { toast } from 'sonner';
 
 export default function Sidebar() {
   const handleMenuClick = (label: string) => {
-    alert(`${label} feature coming soon!`);
+    toast.info(`${label} feature coming soon!`, {
+      description: "This feature is currently under development."
+    });
   };
 
   const sampleUser = "John Doe";
