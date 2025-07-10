@@ -64,6 +64,13 @@ export default function PostList({ refresh }: PostListProps) {
   }, [openMenuPostId]);
 
   const fetchPosts = async () => {
+    if (!supabase) {
+      toast.error('Database not configured', {
+        description: 'Please check your environment variables.'
+      });
+      return;
+    }
+    
     const { data, error } = await supabase
       .from("posts")
       .select("*")
@@ -96,6 +103,8 @@ export default function PostList({ refresh }: PostListProps) {
   };
 
   const fetchComments = async (postId: string) => {
+    if (!supabase) return;
+    
     const { data, error } = await supabase
       .from("comments")
       .select("*")
@@ -109,6 +118,13 @@ export default function PostList({ refresh }: PostListProps) {
 
   const handleComment = async (postId: string) => {
     if (!newComment[postId]?.trim()) return;
+    
+    if (!supabase) {
+      toast.error('Database not configured', {
+        description: 'Please check your environment variables.'
+      });
+      return;
+    }
 
     const { error } = await supabase
       .from("comments")
@@ -184,6 +200,13 @@ export default function PostList({ refresh }: PostListProps) {
                     <div className="absolute right-0 mt-2 w-28 bg-white border border-gray-200 rounded shadow-lg z-10">
                       <button
                         onClick={async () => {
+                          if (!supabase) {
+                            toast.error('Database not configured', {
+                              description: 'Please check your environment variables.'
+                            });
+                            return;
+                          }
+                          
                           toast.promise(
                             (async () => {
                               const { error } = await supabase.from('posts').delete().eq('id', post.id);

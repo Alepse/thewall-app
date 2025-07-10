@@ -59,6 +59,13 @@ export default function PostForm({ onPost }: PostFormProps) {
     e.preventDefault();
     if (!content.trim() && !imageFile) return;
     
+    if (!supabase) {
+      toast.error('Database not configured', {
+        description: 'Please check your environment variables.'
+      });
+      return;
+    }
+    
     setLoading(true);
     let photo_url = null;
     if (imageFile) {
